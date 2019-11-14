@@ -1,0 +1,20 @@
+#!/bin/bash
+set -eu
+
+apt-get update
+echo 'postfix postfix/mailname string ${1}' | debconf-set-selections
+echo 'postfix postfix/main_mailer_type string \"Internet Site\"' | debconf-set-selections
+apt-get install -y curl openssh-server ca-certificates postfix
+
+# Add gitlab repo
+curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash
+# Install gitlab
+apt-get install -y gitlab-ce
+
+# Configure gitlab
+mkdir -p /etc/gitlab
+mv /tmp/gitlab.rb /etc/gitlab/gitlab.rb
+chown root:root /etc/gitlab/gitlab.rb
+chmod 0600 /etc/gitlab/gitlab.rb
+
+/opt/gitlab/bin/gitlab-ctl reconfigure
